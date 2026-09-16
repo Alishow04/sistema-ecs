@@ -1,0 +1,75 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "creatorCode", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "seller", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "product", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "branch", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "brand", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ecsRecords",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cancelled", "order": "ASCENDING" },
+        { "fieldPath": "searchTokens", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}
