@@ -1,0 +1,38 @@
+:root {
+  /* Fiedler / SPX brand tokens (fonte: Central_de_Orçamentos_SPX.html) */
+  --fiedler-blue: #0054A6;
+  --fiedler-blue-2: #0082C6;
+  --fiedler-blue-3: #284480;
+  --fiedler-yellow: #FFF200;
+
+  /* Neutros de conteúdo (claros, conforme briefing) */
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --text: #1D2733;
+  --text-muted: #667085;
+  --border: #E4E7EC;
+  --border-strong: #C4C8D3;
+
+  /* Sidebar (navy, referência visual da Central de Orçamentos) */
+  --sidebar-bg-1: #0B1420;
+  --sidebar-bg-2: #16233A;
+  --sidebar-text: #C8D2E0;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-border: rgba(255,255,255,0.08);
+
+  /* Estado / feedback */
+  --success: #1F9254;
+  --success-bg: #E7F6ED;
+  --danger: #C0392B;
+  --danger-bg: #FBEAE8;
+
+  /* Métricas de layout */
+  --sidebar-width: 240px;
+  --topbar-height: 64px;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+
+  /* Tipografia */
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
