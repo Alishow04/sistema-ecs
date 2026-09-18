@@ -1,0 +1,62 @@
+/* Usado só na exportação de Relatórios (window.print). Ver js/views/reports.js
+   para a troca de <canvas> por <img data-print-img> antes de imprimir — o
+   Chart.js não imprime de forma consistente entre navegadores, imagem sim. */
+
+.print-only {
+  display: none;
+}
+
+.no-print {
+  /* marcador — a regra de fato fica dentro de @media print abaixo,
+     assim a classe não afeta nada na tela normal. */
+}
+
+@media print {
+  .print-only {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .sidebar,
+  .topbar,
+  #toast-region,
+  .no-print {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .content,
+  .content--split,
+  .content--narrow {
+    max-width: none;
+    padding: 0;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  canvas[data-chart] {
+    display: none;
+  }
+
+  img[data-print-img] {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+img[data-print-img] {
+  display: none;
+}
