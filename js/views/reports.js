@@ -70,7 +70,6 @@ export async function renderReports(root) {
         <div class="card__header">
           <div class="card__title-block">
             <h2>Relatórios</h2>
-            <span>Números de verdade aqui — esta tela é para análise, não para acompanhamento diário.</span>
           </div>
         </div>
 
