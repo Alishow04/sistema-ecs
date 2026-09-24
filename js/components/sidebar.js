@@ -1,5 +1,3 @@
-import { clearCurrentUser } from '../identity.js';
-
 const NAV_GROUPS = [
   {
     label: 'Operação',
@@ -28,9 +26,9 @@ const FIEDLER_LOGO_URL = 'https://www.fiedler.com.br/wp-content/uploads/2025/12/
  * @param {{code:string, name:string}} user
  * @param {string} activeId
  * @param {(id:string)=>void} onNavigate
- * @param {()=>void} onSwitchUser
+ * @param {()=>void|Promise<void>} onLogout
  */
-export function renderSidebar(container, user, activeId, onNavigate, onSwitchUser) {
+export function renderSidebar(container, user, activeId, onNavigate, onLogout) {
   const initials = user.code.slice(0, 2).toUpperCase();
 
   container.innerHTML = `
@@ -63,7 +61,7 @@ export function renderSidebar(container, user, activeId, onNavigate, onSwitchUse
         <div class="sidebar__user-badge">${initials}</div>
         <div class="sidebar__user-name">${user.name}</div>
       </div>
-      <button type="button" class="sidebar__switch-user" data-switch-user>Trocar usuário</button>
+      <div class="sidebar__user-email">${user.email || ''}</div>\n      <button type="button" class="sidebar__switch-user" data-switch-user>Sair</button>
     </div>
   `;
 
@@ -72,7 +70,6 @@ export function renderSidebar(container, user, activeId, onNavigate, onSwitchUse
   });
 
   container.querySelector('[data-switch-user]').addEventListener('click', () => {
-    clearCurrentUser();
-    onSwitchUser();
+    onLogout();
   });
 }

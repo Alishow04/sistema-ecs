@@ -1,31 +1,54 @@
 rules_version = '2';
 
-// ATENÇÃO — leia antes de publicar:
-// Este app ainda não usa Firebase Authentication (identificação é só
-// localStorage, ver seção 5 da análise). Sem Auth, estas regras não
-// impedem que alguém com as chaves públicas do Firebase escreva direto
-// na API, fora do app. Elas garantem a INTEGRIDADE dos dados (formato,
-// campos obrigatórios, sequência sempre crescente) mas não são controle
-// de acesso real. Para isso, os próximos passos recomendados são:
-//   1) Firebase App Check (bloqueia clientes que não sejam o seu app)
-//   2) Restringir a rede (ex.: Firebase Hosting + regra de IP/VPN)
-//   3) Login real (Firebase Auth) quando fizer sentido no roadmap
-//
-// Enquanto isso, este arquivo é a única barreira contra escrita malformada
-// ou fora de ordem — trate-o como parte da "mecânica segura", não como
-// segurança de acesso.
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ecsUser() {
+      return signedIn()
+        && request.auth.token.email in [
+          'alison@fiedler.com.br',
+          'murilo@fiedler.com.br',
+          'caua@fiedler.com.br'
+        ];
+    }
+
+    function creatorMatches(data) {
+      return
+        (request.auth.token.email == 'alison@fiedler.com.br' && data.creatorCode == 'AK')
+        || (request.auth.token.email == 'murilo@fiedler.com.br' && data.creatorCode == 'ML')
+        || (request.auth.token.email == 'caua@fiedler.com.br' && data.creatorCode == 'CP');
+    }
+
+    function changedByMatches(data) {
+      return
+        (request.auth.token.email == 'alison@fiedler.com.br' && data.changedBy == 'AK')
+        || (request.auth.token.email == 'murilo@fiedler.com.br' && data.changedBy == 'ML')
+        || (request.auth.token.email == 'caua@fiedler.com.br' && data.changedBy == 'CP');
+    }
+
+    // Central de Orçamentos SPX, incluindo revisions/ e states/.
+    match /spx_quotes/{document=**} {
+      allow read, write: if signedIn();
+    }
+
+    // Sistema ECS.
     match /ecsRecords/{docId} {
-      allow read: if true;
+      allow read: if ecsUser();
 
       allow create: if
-        request.resource.data.keys().hasAll([
+        ecsUser()
+        && request.resource.data.keys().hasAll([
           'ecsCode','sequence','year','creatorCode','creatorName',
+          'creatorEmail','creatorUid',
           'client','ecsDate','cancelled','createdAt','searchTokens'
         ])
+        && creatorMatches(request.resource.data)
+        && request.resource.data.creatorEmail == request.auth.token.email
+        && request.resource.data.creatorUid == request.auth.uid
         && request.resource.data.sequence is int
         && request.resource.data.sequence > 0
         && request.resource.data.year is int
@@ -34,38 +57,59 @@ service cloud.firestore {
         && request.resource.data.client is string
         && docId == string(request.resource.data.year) + '-' + string(request.resource.data.sequence);
 
-      // Campos "de identidade" nunca podem mudar depois de criados.
       allow update: if
-        request.resource.data.ecsCode == resource.data.ecsCode
+        ecsUser()
+        && request.resource.data.ecsCode == resource.data.ecsCode
         && request.resource.data.sequence == resource.data.sequence
         && request.resource.data.year == resource.data.year
         && request.resource.data.creatorCode == resource.data.creatorCode
-        && request.resource.data.createdAt == resource.data.createdAt;
+        && request.resource.data.creatorName == resource.data.creatorName
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.get('creatorEmail', '') == resource.data.get('creatorEmail', '')
+        && request.resource.data.get('creatorUid', '') == resource.data.get('creatorUid', '');
 
       allow delete: if false;
 
       match /history/{entryId} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasAll(['field','oldValue','newValue','changedBy','changedAt']);
+        allow read: if ecsUser();
+
+        allow create: if
+          ecsUser()
+          && request.resource.data.keys().hasAll([
+            'field','oldValue','newValue','changedBy',
+            'changedByEmail','changedByUid','changedAt'
+          ])
+          && changedByMatches(request.resource.data)
+          && request.resource.data.changedByEmail == request.auth.token.email
+          && request.resource.data.changedByUid == request.auth.uid;
+
         allow update, delete: if false;
       }
     }
 
     match /ecsCounters/{year} {
-      allow read: if true;
-      // Só permite avançar a sequência (nunca diminuir ou pular a validação da transação).
-      allow create: if request.resource.data.currentSequence is int && request.resource.data.currentSequence >= 0;
-      allow update: if request.resource.data.currentSequence is int
+      allow read: if ecsUser();
+
+      allow create: if
+        ecsUser()
+        && request.resource.data.currentSequence is int
+        && request.resource.data.currentSequence >= 0;
+
+      allow update: if
+        ecsUser()
+        && request.resource.data.currentSequence is int
         && request.resource.data.currentSequence == resource.data.currentSequence + 1;
+
       allow delete: if false;
     }
 
     match /settings/{name} {
-      // Listas de apoio (vendedores, filiais, produtos...) — leitura livre,
-      // escrita liberada por enquanto (tela de Configurações ainda não existe
-      // nesta v1). Revisar quando Configurações + Auth existirem.
-      allow read: if true;
-      allow write: if true;
+      allow read, write: if ecsUser();
+    }
+
+    // Nenhuma outra coleção fica implicitamente aberta.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

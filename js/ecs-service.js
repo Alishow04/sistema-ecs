@@ -53,6 +53,8 @@ export async function createEcs(input, user) {
       year,
       creatorCode: user.code,
       creatorName: user.name,
+      creatorEmail: user.email || '',
+      creatorUid: user.uid || '',
       client: input.client || '',
       requester: input.requester || '',
       seller: input.seller || '',
@@ -124,6 +126,8 @@ export async function updateEcs(id, changes, user) {
       transaction.set(historyRef, {
         ...entry,
         changedBy: user.code,
+        changedByEmail: user.email || '',
+        changedByUid: user.uid || '',
         changedAt: serverTimestamp(),
       });
     });
@@ -153,6 +157,8 @@ export async function setEcsCancelled(id, cancelled, user) {
       oldValue: current.cancelled,
       newValue: cancelled,
       changedBy: user.code,
+      changedByEmail: user.email || '',
+      changedByUid: user.uid || '',
       changedAt: serverTimestamp(),
     });
   });

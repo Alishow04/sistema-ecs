@@ -1,5 +1,6 @@
-import { getCurrentUser } from './identity.js';
-import { renderUserSelect } from './views/user-select.js';
+import { clearCurrentUser, setCurrentUserFromFirebase } from './identity.js';
+import { observeAuthState, signOutUser } from './auth-service.js';
+import { renderLogin } from './views/login.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderTopbar } from './components/topbar.js';
 import { renderNewEcs } from './views/new-ecs.js';
@@ -23,21 +24,10 @@ const VIEWS = {
 
 const appEl = document.getElementById('app');
 
-/**
- * Deep-link vindo do Fiedler SPX Hub: ?ecs=ECS-AK-26-1577
- * Resolve o código público para o docId ("{ano}-{sequencia}") e já abre
- * direto na tela de Detalhes, em vez de cair no Dashboard como de costume.
- * O parâmetro é removido da URL logo em seguida, independente do resultado,
- * pra não tentar de novo sozinho se a pessoa der F5.
- */
 async function resolveDeepLink() {
   const params = new URLSearchParams(window.location.search);
   const ecsParam = params.get('ecs');
   if (!ecsParam) return null;
-
-  const url = new URL(window.location.href);
-  url.searchParams.delete('ecs');
-  window.history.replaceState({}, '', url);
 
   try {
     const record = await fetchEcsByCode(ecsParam);
@@ -45,6 +35,12 @@ async function resolveDeepLink() {
       showToast(`ECS "${ecsParam}" não encontrado.`, 'error');
       return null;
     }
+
+    // Só remove o parâmetro depois que o registro foi resolvido com sucesso.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('ecs');
+    window.history.replaceState({}, '', url);
+
     return { id: record.id, backTo: 'dashboard' };
   } catch (err) {
     console.error('Deep link (Hub) falhou:', err);
@@ -53,10 +49,11 @@ async function resolveDeepLink() {
   }
 }
 
-async function boot() {
-  const user = getCurrentUser();
+async function openAuthenticatedApp(firebaseUser) {
+  const user = setCurrentUserFromFirebase(firebaseUser);
   if (!user) {
-    renderUserSelect(appEl, boot);
+    showToast('Sua conta não está autorizada no Sistema ECS.', 'error');
+    await signOutUser();
     return;
   }
 
@@ -84,10 +81,13 @@ function renderShell(user, initialViewId, initialParams = {}) {
   const topbarEl = appEl.querySelector('[data-topbar]');
   const contentEl = appEl.querySelector('[data-content]');
 
+  async function logout() {
+    await signOutUser();
+  }
+
   function navigate(viewId, params = {}) {
     const view = VIEWS[viewId] || VIEWS['new-ecs'];
-    // A sidebar só destaca itens que têm link próprio nela (details não tem).
-    renderSidebar(sidebarEl, user, viewId, navigate, boot);
+    renderSidebar(sidebarEl, user, viewId, navigate, logout);
     renderTopbar(topbarEl, view.title, () => navigate('new-ecs'));
     document.title = `${view.title} · Sistema ECS`;
     view.render(contentEl, params);
@@ -97,4 +97,11 @@ function renderShell(user, initialViewId, initialParams = {}) {
   navigate(initialViewId, initialParams);
 }
 
-boot();
+observeAuthState((firebaseUser) => {
+  if (!firebaseUser) {
+    clearCurrentUser();
+    renderLogin(appEl);
+    return;
+  }
+  openAuthenticatedApp(firebaseUser);
+});

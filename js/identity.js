@@ -1,26 +1,46 @@
-// Identificação do responsável sem login (ver seção 5 da análise de arquitetura).
-//
-// Importante: todo o resto do app deve chamar getCurrentUser()/setCurrentUser()
-// daqui — nunca ler localStorage diretamente. Isso é o que permite trocar esse
-// mecanismo por Firebase Authentication no futuro sem tocar em mais nada.
+// Identidade do Sistema ECS derivada exclusivamente do Firebase Authentication.
+// Não há mais seleção manual nem localStorage como fonte de identidade.
 
-const STORAGE_KEY = 'ecs_user';
+const PROFILE_BY_EMAIL = Object.freeze({
+  'alison@fiedler.com.br': { code: 'AK', name: 'Alison Körtelt' },
+  'murilo@fiedler.com.br': { code: 'ML', name: 'Murilo Lini' },
+  'caua@fiedler.com.br': { code: 'CP', name: 'Cauã Pitz' },
+});
 
-export function getCurrentUser() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+let currentUser = null;
+
+export function profileForEmail(email) {
+  return PROFILE_BY_EMAIL[String(email || '').trim().toLowerCase()] || null;
 }
 
-/** user: { code: 'AK', name: 'Alison Körtelt' } */
-export function setCurrentUser(user) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+export function isAuthorizedEmail(email) {
+  return Boolean(profileForEmail(email));
+}
+
+export function setCurrentUserFromFirebase(firebaseUser) {
+  if (!firebaseUser) {
+    currentUser = null;
+    return null;
+  }
+
+  const profile = profileForEmail(firebaseUser.email);
+  if (!profile) {
+    currentUser = null;
+    return null;
+  }
+
+  currentUser = {
+    ...profile,
+    email: String(firebaseUser.email || '').trim().toLowerCase(),
+    uid: firebaseUser.uid,
+  };
+  return currentUser;
+}
+
+export function getCurrentUser() {
+  return currentUser;
 }
 
 export function clearCurrentUser() {
-  localStorage.removeItem(STORAGE_KEY);
+  currentUser = null;
 }

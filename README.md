@@ -411,3 +411,13 @@ Relatórios.
 - A opção atual aparece marcada na lista.
 - Ao trocar ou limpar a Marca, o Produto/Demanda anterior é automaticamente invalidado e limpo; a nova lista é carregada pela Marca selecionada.
 - O mesmo comportamento Marca → Produto foi aplicado na criação e na edição de ECS.
+
+
+## Autenticação unificada (Central SPX)
+
+Nesta versão, o Sistema ECS usa o projeto Firebase `central-spx-fiedler` para
+Authentication e Firestore. O ECS deixa de usar `localStorage` como identidade:
+o e-mail autenticado determina automaticamente AK / ML / CP.
+
+A migração dos dados antigos do projeto `sistema-ecs` deve ser executada uma
+única vez com o utilitário `migrate-ecs.html` fornecido no pacote de migração.
